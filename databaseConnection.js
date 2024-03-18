@@ -6,8 +6,8 @@ const dbConfig = {
 	user: process.env.MYSQL_USER,
 	password: process.env.MYSQL_PASSWORD,
 	database: process.env.MYSQL_DATABASE,
-	multipleStatements: false,
-	namedPlaceholders: true
+	multipleStatements: true,
+	// namedPlaceholders: true
 };
 
 var database = mysql.createPool(dbConfig);

@@ -14,7 +14,7 @@ const db_users = include('database/users');
 const success = db_utils.printMySQLVersion();
 
 
-const port = process.env.PORT || 3040;
+const port = process.env.PORT || 3030;
 
 const app = express();
 
@@ -56,66 +56,15 @@ app.use(session({
 }
 ));
 
-// app.use('/', sessionValidation);
+// ------------------------------------------------------------------------
+
 
 app.get('/', (req,res) => {
     // res.send("<h1>Hello World!</h1>");
     if (req.session.username) {
-        res.render("loggedin", {username: req.session.username});
+        res.render("loggedin", {username: req.session.username, port: port});
     } else{
-        res.render("index");
-    }
-});
-
-app.get('/about', (req,res) => {
-    var color = req.query.color;
-    if (!color) {
-        color = "black";
-    }
-
-    // res.send(`<h1 style='color:${color};'>About</h1>`);
-    res.render("about", {color: color} );
-});
-
-app.get('/contact', (req,res) => {
-    var missingEmail = req.query.missing;
-
-    // var html = `
-    //     email address:
-    //     <form action='/submitEmail' method='post'>
-    //         <input name='email' type='text' placeholder='email'>
-    //         <button>Submit</button>
-    //     </form>
-    // `;
-    // if (missingEmail) {
-    //     html += "<br> email is required";
-    // }
-    // res.send(html);
-
-    res.render("contact", {missing: missingEmail});
-});
-
-app.post('/submitEmail', (req,res) => {
-    var email = req.body.email;
-    if (!email) {
-        res.redirect('/contact?missing=1');
-    }
-    else {
-        // res.send("Thanks for subscribing with your email: "+email);
-        res.render("submitEmail", {email: email});
-    }
-});
-
-app.get('/createTables', async (req,res) => {
-
-    const create_tables = include('database/create_tables');
-
-    var success = create_tables.createTables();
-    if (success) {
-        res.render("successMessage", {message: "Created tables."} );
-    }
-    else {
-        res.render("errorMessage", {error: "Failed to create tables."} );
+        res.render("index", {port: port});
     }
 });
 
@@ -135,6 +84,7 @@ app.get('/signup', (req,res) => {
     // res.send(html);
     res.render("createUser", {missingName: missingUsername, missingPass: missingPassword, missingBoth: missingBoth});
 }); 
+
 
 app.post('/submitUser', async (req,res) => {
     var username = req.body.username;
@@ -219,7 +169,8 @@ app.post('/loggingin', async (req,res) => {
             else{
                 console.log("invalid password");
             }
-        } else {
+        }
+        else {
             console.log('invalid number of users matched: '+results.length+" (expected 1).");
             res.redirect('/login?badlogin=1');
             return;            
@@ -230,6 +181,38 @@ app.post('/loggingin', async (req,res) => {
 
     //user and password combination not found
     res.redirect("/login?badlogin=1");
+});
+
+app.use('/loggedin', sessionValidation);
+
+app.get('/loggedin', (req,res) => {
+    // if (!req.session.authenticated) {
+    //     res.redirect('/login');
+    // }
+    
+    // var html = `
+    // You are logged in! :D
+    // `;
+    // res.send(html);
+    res.render("loggedin", {port: port, username: req.session.username});
+});
+
+
+app.use('/members', sessionValidation);
+
+app.get('/members', (req,res) => {
+    let randomNum = Math.floor(Math.random() * 3) + 1;
+    res.render("formembers", {port: port, username: req.session.username, user_type: req.session.user_type, randomNum: randomNum});
+});
+
+
+app.get('/logout', (req,res) => {
+    req.session.destroy(e => {
+        if (e) {
+            console.log("error destroying session: ", e);
+        }
+        res.redirect('/');
+    });
 });
 
 
@@ -269,104 +252,6 @@ function adminAuthorization(req, res, next) {
 	}
 }
 
-app.use('/loggedin', sessionValidation);
-app.use('/loggedin/admin', adminAuthorization);
-
-app.get('/loggedin', (req,res) => {
-    // if (!req.session.authenticated) {
-    //     res.redirect('/login');
-    // }
-    
-    // var html = `
-    // You are logged in! :D
-    // `;
-    // res.send(html);
-    res.render("loggedin", {username: req.session.username});
-});
-
-app.get('/loggedin/info', (req,res) => {
-    res.render("loggedin-info");
-});
-
-app.get('/loggedin/admin', (req,res) => {
-    res.render("admin");
-});
-
-
-app.use('/members', sessionValidation);
-
-app.get('/members', (req,res) => {
-    let randomNum = Math.floor(Math.random() * 3) + 1;
-    res.render("formembers", {username: req.session.username, user_type: req.session.user_type, randomNum: randomNum});
-});
-
-
-app.get('/cat/:id', (req,res) => {
-    var cat = req.params.id;
-
-    // if (cat == 1) {
-    //     res.send("Fluffy: <img src='/cat1.jpg' style='width:250px;'>");
-    // } else if (cat == 2) {
-    //     res.send("Socks: <img src='/cat2.jpg' style='width:250px;'>");
-    // } else {
-    //     res.send("Invalid cat id: "+cat);
-    // }
-
-    res.render("cat", {cat: cat});
-});
-
-app.get('/logout', (req,res) => {
-    req.session.destroy(e => {
-        if (e) {
-            console.log("error destroying session: ", e);
-        }
-        res.redirect('/');
-    });
-});
-
-
-app.get('/api', (req,res) => {
-	var user = req.session.user;
-    var user_type = req.session.user_type;
-	console.log("api hit ");
-
-	var jsonResponse = {
-		success: false,
-		data: null,
-		date: new Date()
-	};
-
-	
-	if (!isValidSession(req)) {
-		jsonResponse.success = false;
-		res.status(401);  //401 == bad user
-		res.json(jsonResponse);
-		return;
-	}
-
-	if (typeof id === 'undefined') {
-		jsonResponse.success = true;
-		if (user_type === "admin") {
-			jsonResponse.data = ["A","B","C","D"];
-		}
-		else {
-			jsonResponse.data = ["A","B"];
-		}
-	}
-	else {
-		if (!isAdmin(req)) {
-			jsonResponse.success = false;
-			res.status(403);  //403 == good user, but, user should not have access
-			res.json(jsonResponse);
-			return;
-		}
-		jsonResponse.success = true;
-		jsonResponse.data = [id + " - details"];
-	}
-
-	res.json(jsonResponse);
-
-});
 
 // app.use(express.static(__dirname + "/../public"));
 app.use(express.static(__dirname + "/public"));
