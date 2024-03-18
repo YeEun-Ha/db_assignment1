@@ -368,7 +368,8 @@ app.get('/api', (req,res) => {
 
 });
 
-app.use(express.static(__dirname + "/../public"));
+// app.use(express.static(__dirname + "/../public"));
+app.use(express.static(__dirname + "/public"));
 
 app.get("*", (req,res) => {
 	res.status(404);
