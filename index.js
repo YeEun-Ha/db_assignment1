@@ -11,19 +11,6 @@ const saltRounds = 12;
 const database = include('databaseConnection');
 const db_utils = include('database/db_utils');
 const db_users = include('database/users');
-
-const dbConfig = {
-	host: process.env.MYSQL_HOST,
-    port: process.env.MYSQL_PORT,
-	user: process.env.MYSQL_USER,
-	password: process.env.MYSQL_PASSWORD,
-	database: process.env.MYSQL_DATABASE,
-	multipleStatements: true,
-	// namedPlaceholders: true
-};
-console.log("testing database connection");
-console.log(dbConfig);
-
 const success = db_utils.printMySQLVersion();
 
 
