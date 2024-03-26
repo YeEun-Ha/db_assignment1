@@ -64,7 +64,7 @@ app.get('/', (req,res) => {
     if (req.session.username) {
         res.render("loggedin", {username: req.session.username, port: port});
     } else{
-        res.render("login", {port: port});
+        res.render("home", {port: port});
     }
 });
 
