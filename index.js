@@ -35,7 +35,7 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 // /* END secret section */
 
 app.set('view engine', 'ejs');
-// app.set('views', path.join(__dirname, '/../Views'));  
+app.set('views', path.join(__dirname, '/Views'));  
 
 
 app.use(express.urlencoded({extended: false}));
