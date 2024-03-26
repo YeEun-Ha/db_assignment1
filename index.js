@@ -62,9 +62,9 @@ app.use(session({
 app.get('/', (req,res) => {
     // res.send("<h1>Hello World!</h1>");
     if (req.session.username) {
-        res.render("loggedin", {username: req.session.username, port: port});
+        res.render("loggedin", {username: req.session.username});
     } else{
-        res.render("home", {port: port});
+        res.render("home");
     }
 });
 
@@ -194,7 +194,7 @@ app.get('/loggedin', (req,res) => {
     // You are logged in! :D
     // `;
     // res.send(html);
-    res.render("loggedin", {port: port, username: req.session.username});
+    res.render("loggedin", {username: req.session.username});
 });
 
 
@@ -202,7 +202,7 @@ app.use('/members', sessionValidation);
 
 app.get('/members', (req,res) => {
     let randomNum = Math.floor(Math.random() * 3) + 1;
-    res.render("formembers", {port: port, username: req.session.username, user_type: req.session.user_type, randomNum: randomNum});
+    res.render("formembers", {username: req.session.username, user_type: req.session.user_type, randomNum: randomNum});
 });
 
 
